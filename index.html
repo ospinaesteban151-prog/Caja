@@ -1,1 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Caja - Normas de Interfaces Visuales</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --border: #cbd5e1;
+      --success: #16a34a;
+      --warning: #ea580c;
+      --danger: #dc2626;
+    }
 
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    header {
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+    header h1 { margin: 0; font-size: 1.5rem; }
+    header p { margin: 0.25rem 0 0; color: #64748b; font-size: 0.9rem; }
+
+    /* Distribución de Caja de Diálogo y Panel Dependiente */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      font-size: 1.15rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.6rem;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* Feedback de error inmediato (Grano fino) */
+    input.input-error {
+      border-color: var(--danger);
+      background-color: #fef2f2;
+    }
+
+    .error-hint {
+      color: var(--danger);
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+      display: none;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    button {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: opacity 0.2s, background-color 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: #e2e8f0;
+      color: var(--text);
+    }
+
+    /* Objetos Dependientes (Derecha) */
+    .dependent-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .total-display {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 0.25rem 0;
+    }
+
+    /* Barra de progreso de Stock */
+    .stock-bar-bg {
+      width: 100%;
+      height: 14px;
+      background: #e2e8f0;
+      border-radius: 7px;
+      overflow: hidden;
+      margin: 0.5rem 0;
+    }
+
+    .stock-bar-fill {
+      height: 100%;
+      width: 100%;
+      background-color: var(--success);
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    /* Alerta de límite de crédito / autorización */
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .status-badge.warning {
+      background-color: #ffedd5;
+      color: #9a3412;
+    }
+
+    .status-badge.danger {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* Feedback de demora (Proceso largo) */
+    .progress-container {
+      margin-top: 1.2rem;
+      display: none;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 0.4rem;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.1s linear;
+    }
+
+    .toast {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: 6px;
+      background: #dcfce7;
+      color: #166534;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Punto de Venta - Prototipo Interactivo</h1>
+    <p>Demostración de Dependencias Visuales, Cajas de Diálogo y Feedback (Cap. III)</p>
+  </header>
+
+  <div class="grid">
+    <!-- IZQUIERDA: Caja de Diálogo / Formulario -->
+    <section class="panel">
+      <h2>1. Entrada de Datos (Caja de Diálogo)</h2>
+
+      <div class="form-group">
+        <label for="producto">Producto (Precio Unitario)</label>
+        <select id="producto">
+          <option value="50000" data-stock="20">Teclado Mecánico ($50.000) — Stock: 20</option>
+          <option value="120000" data-stock="10">Monitor Portátil ($120.000) — Stock: 10</option>
+          <option value="25000" data-stock="15">Mouse Inalámbrico ($25.000) — Stock: 15</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="cantidad">Cantidad a vender</label>
+        <input type="text" id="cantidad" value="1" placeholder="Ingrese un número entero">
+        <div id="cantidadError" class="error-hint">Error: Solo se admiten números enteros mayores a 0.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="descuento">Descuento aplicable</label>
+        <select id="descuento">
+          <option value="0">Sin descuento (0%)</option>
+          <option value="0.10">Cliente frecuente (10%)</option>
+          <option value="0.25">Promoción especial (25%)</option>
+        </select>
+      </div>
+
+      <div class="btn-group">
+        <button id="btnProcesar" class="btn-primary">Procesar Venta</button>
+        <button id="btnCancelar" class="btn-secondary">Restablecer</button>
+      </div>
+
+      <!-- Feedback de demora para procesos largos -->
+      <div id="progressContainer" class="progress-container">
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600;">
+          <span>Validando factura y actualizando inventario...</span>
+          <span id="progressText">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div id="progressFill" class="progress-bar-fill"></div>
+        </div>
+      </div>
+
+      <div id="toastSuccess" class="toast">✓ Transacción completada con éxito.</div>
+    </section>
+
+    <!-- DERECHA: Objetos Dependientes en Tiempo Real -->
+    <section class="panel">
+      <h2>2. Objetos Dependientes (Estado en Vivo)</h2>
+
+      <div class="dependent-box">
+        <span style="font-size: 0.85rem; color: #64748b;">Total a Pagar (Actualización automática)</span>
+        <div id="totalDisplay" class="total-display">$50.000</div>
+        <small id="ahorroDisplay" style="color: var(--success);">Ahorro aplicado: $0</small>
+      </div>
+
+      <div class="dependent-box">
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+          <span>Disponibilidad de Stock Restante:</span>
+          <strong id="stockText">19 / 20 unidades</strong>
+        </div>
+        <div class="stock-bar-bg">
+          <div id="stockBar" class="stock-bar-fill"></div>
+        </div>
+      </div>
+
+      <div class="dependent-box">
+        <span style="display: block; font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">
+          Estado de Autorización de Caja:
+        </span>
+        <div id="statusBadge" class="status-badge">
+          <span>🟢</span>
+          <span id="statusText">Venta estándar: Aprobación inmediata</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+  const productoSelect = document.getElementById('producto');
+  const cantidadInput = document.getElementById('cantidad');
+  const cantidadError = document.getElementById('cantidadError');
+  const descuentoSelect = document.getElementById('descuento');
+  const btnProcesar = document.getElementById('btnProcesar');
+  const btnCancelar = document.getElementById('btnCancelar');
+
+  // Elementos dependientes
+  const totalDisplay = document.getElementById('totalDisplay');
+  const ahorroDisplay = document.getElementById('ahorroDisplay');
+  const stockText = document.getElementById('stockText');
+  const stockBar = document.getElementById('stockBar');
+  const statusBadge = document.getElementById('statusBadge');
+  const statusText = document.getElementById('statusText');
+
+  // Elementos de progreso
+  const progressContainer = document.getElementById('progressContainer');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+  const toastSuccess = document.getElementById('toastSuccess');
+
+  const formatoMoneda = new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0
+  });
+
+  function actualizarDependencias() {
+    toastSuccess.style.display = 'none';
+    const option = productoSelect.options[productoSelect.selectedIndex];
+    const precio = parseFloat(option.value);
+    const stockMax = parseInt(option.dataset.stock);
+    const descuento = parseFloat(descuentoSelect.value);
+    const rawValor = cantidadInput.value.trim();
+
+    // Validación de grano fino (en vivo mientras escribe)
+    const esNumeroValido = /^[1-9]\d*$/.test(rawValor);
+    const cantidad = esNumeroValido ? parseInt(rawValor) : 0;
+
+    if (!esNumeroValido) {
+      cantidadInput.classList.add('input-error');
+      cantidadError.style.display = 'block';
+      btnProcesar.disabled = true; // Feedback preventivo
+      totalDisplay.textContent = '$0';
+      ahorroDisplay.textContent = 'Ahorro aplicado: $0';
+      return;
+    } else {
+      cantidadInput.classList.remove('input-error');
+      cantidadError.style.display = 'none';
+    }
+
+    // 1. Dependencia: Cálculo de Total y Ahorro
+    const subtotal = precio * cantidad;
+    const ahorro = subtotal * descuento;
+    const total = subtotal - ahorro;
+
+    totalDisplay.textContent = formatoMoneda.format(total);
+    ahorroDisplay.textContent = `Ahorro aplicado: ${formatoMoneda.format(ahorro)}`;
+
+    // 2. Dependencia: Barra de Stock y Color
+    const restante = stockMax - cantidad;
+    if (restante < 0) {
+      stockText.textContent = `Sin stock suficiente (Faltan ${Math.abs(restante)})`;
+      stockBar.style.width = '100%';
+      stockBar.style.backgroundColor = 'var(--danger)';
+      btnProcesar.disabled = true; // Feedback preventivo
+    } else {
+      const porcentajeStock = (restante / stockMax) * 100;
+      stockText.textContent = `${restante} / ${stockMax} unidades`;
+      stockBar.style.width = `${porcentajeStock}%`;
+      btnProcesar.disabled = false;
+
+      if (porcentajeStock <= 25) {
+        stockBar.style.backgroundColor = 'var(--danger)';
+      } else if (porcentajeStock <= 50) {
+        stockBar.style.backgroundColor = 'var(--warning)';
+      } else {
+        stockBar.style.backgroundColor = 'var(--success)';
+      }
+    }
+
+    // 3. Dependencia: Semáforo de Autorización según monto o stock
+    statusBadge.className = 'status-badge';
+    if (restante < 0) {
+      statusBadge.classList.add('danger');
+      statusBadge.innerHTML = '<span>🔴</span><span>Bloqueado: La cantidad supera el inventario</span>';
+    } else if (total >= 500000) {
+      statusBadge.classList.add('warning');
+      statusBadge.innerHTML = '<span>🟠</span><span>Monto alto: Requiere clave de supervisor</span>';
+    } else {
+      statusBadge.innerHTML = '<span>🟢</span><span>Venta estándar: Aprobación inmediata</span>';
+    }
+  }
+
+  // Simulación de Feedback para Demoras (Proceso largo)
+  btnProcesar.addEventListener('click', () => {
+    btnProcesar.disabled = true;
+    btnCancelar.disabled = true;
+    productoSelect.disabled = true;
+    cantidadInput.disabled = true;
+    descuentoSelect.disabled = true;
+
+    toastSuccess.style.display = 'none';
+    progressContainer.style.display = 'block';
+    let progreso = 0;
+
+    const intervalo = setInterval(() => {
+      progreso += 5;
+      progressFill.style.width = `${progreso}%`;
+      progressText.textContent = `${progreso}%`;
+
+      if (progreso >= 100) {
+        clearInterval(intervalo);
+        setTimeout(() => {
+          progressContainer.style.display = 'none';
+          toastSuccess.style.display = 'block';
+          btnProcesar.disabled = false;
+          btnCancelar.disabled = false;
+          productoSelect.disabled = false;
+          cantidadInput.disabled = false;
+          descuentoSelect.disabled = false;
+        }, 300);
+      }
+    }, 120); // ~2.4 segundos de proceso visible
+  });
+
+  // Botón de salida / restablecer estado por defecto
+  btnCancelar.addEventListener('click', () => {
+    productoSelect.selectedIndex = 0;
+    cantidadInput.value = '1';
+    descuentoSelect.selectedIndex = 0;
+    actualizarDependencias();
+  });
+
+  // Eventos reactivos
+  productoSelect.addEventListener('change', actualizarDependencias);
+  cantidadInput.addEventListener('input', actualizarDependencias);
+  descuentoSelect.addEventListener('change', actualizarDependencias);
+
+  // Inicializar estado
+  actualizarDependencias();
+</script>
+
+</body>
+</html>
